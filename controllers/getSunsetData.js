@@ -7,7 +7,7 @@ const getSunsetData = async (req, res) => {
     const city = req.query.city;
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
     const response = await axios.get(url);
-    res.send(response.data.sys);
+    res.send(response.data);
   } catch (error) {
     console.log(error);
     if (error.response) {

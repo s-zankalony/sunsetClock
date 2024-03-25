@@ -10,7 +10,7 @@ const getSunsetTime = async (city) => {
     const response = await customAxios.get(`/?${searchParams}`);
     const data = await response.data;
     console.log(data);
-    return data.sunset;
+    return data;
   } catch (error) {
     if (error.response) {
       console.log(error.response.data);
@@ -26,14 +26,23 @@ const getSunsetTime = async (city) => {
   }
 };
 
-const GetCityForm = ({ onSunsetTime }) => {
+const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const city = e.target.city.value;
-    const sunsetTime = await getSunsetTime(city);
+    const cityData = await getSunsetTime(city);
+    const sunsetTime = cityData.sys.sunset;
+    const timezone = cityData.timezone;
+    const name = cityData.name;
+    const country = cityData.sys.country;
     console.log(`Sunset Time: ${sunsetTime}`);
-
+    console.log(`timezone: ${timezone}`);
+    console.log(`name: ${name}`);
+    console.log(`country: ${country}`);
     onSunsetTime(sunsetTime);
+    onTimezone(timezone);
+    onName(name);
+    onCountry(country);
   };
 
   return (

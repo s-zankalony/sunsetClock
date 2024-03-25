@@ -5,12 +5,29 @@ import GetCityForm from '../components/GetCityForm';
 
 function App() {
   const [sunsetTime, setSunsetTime] = useState(null);
+  const [timezone, setTimezone] = useState(null);
+  const [name, setName] = useState('');
+  const [country, setCountry] = useState('');
   const handleSunsetTime = (time) => setSunsetTime(time);
+  const handleTimezone = (timezone) => setTimezone(timezone);
+  const handleName = (name) => setName(name);
+  const handleCountry = (country) => setCountry(country);
   return (
     <>
-      <GetCityForm onSunsetTime={handleSunsetTime} />
+      <h1>Sunset Clock</h1>
+      <GetCityForm
+        onSunsetTime={handleSunsetTime}
+        onTimezone={handleTimezone}
+        onName={handleName}
+        onCountry={handleCountry}
+      />
       <hr />
-      <SunsetClock sunsetTime={sunsetTime} />
+      <SunsetClock
+        sunsetTime={sunsetTime}
+        timezone={timezone}
+        name={name}
+        country={country}
+      />
       <hr />
 
       <p>
@@ -25,5 +42,3 @@ function App() {
 }
 
 export default App;
-
-// this is tiring
