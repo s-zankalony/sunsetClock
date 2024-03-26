@@ -43,7 +43,7 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
 
   const sunsetHours =
     hours - sunsetTimeHours < 0
-      ? hours - sunsetTimeHours + 24
+      ? hours - sunsetTimeHours + 23
       : hours - sunsetTimeHours;
   const sunsetMinutes =
     minutes - sunsetTimeMinutes < 0
