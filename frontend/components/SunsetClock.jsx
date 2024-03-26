@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
   const sanitizedTimezone = Number(timezone);

@@ -4,7 +4,7 @@ import SunsetClock from './SunsetClock';
 const getSunsetTime = async (city) => {
   const searchParams = new URLSearchParams({ city: city }).toString();
   const customAxios = axios.create({
-    baseURL: `http://localhost:3000/`,
+    baseURL: `/api/v1`,
   });
   try {
     const response = await customAxios.get(`/?${searchParams}`);
