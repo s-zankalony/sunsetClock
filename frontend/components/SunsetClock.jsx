@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
-  const timezoneOffset = timezone / 3600;
+  const sanitizedTimezone = Number(timezone);
+  if (isNaN(sanitizedTimezone)) {
+    throw new Error('Invalid timezone');
+  }
+  const timezoneOffset = sanitizedTimezone / 3600;
 
   const [time, setTime] = useState(new Date());
   const [sunsetClock, setSunsetClock] = useState(new Date(sunsetTime * 1000));
@@ -9,13 +13,17 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTime(new Date());
-      // console.log(`time variable: ${time}`);
       setSunsetClock(new Date(sunsetTime * 1000));
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [sunsetTime]);
 
-  if (sunsetTime === null || timezone === null) {
+  if (
+    sunsetTime === null ||
+    sunsetTime === undefined ||
+    timezone === null ||
+    timezone === undefined
+  ) {
     return <h1>Enter City to Begin...</h1>;
   }
 
@@ -46,10 +54,32 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
       ? seconds - sunsetTimeSeconds + 60
       : seconds - sunsetTimeSeconds;
 
+  const sanitizedName = validateAndSanitize(name);
+
+  const sanitizedCountry = validateAndSanitize(country);
+
+  function validateAndSanitize(input) {
+    if (typeof input !== 'string') {
+      throw new Error('Invalid input type');
+    }
+
+    // Escaping special HTML characters to prevent XSS
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '/': '&#x2F;',
+    };
+    const reg = /[&<>"'/]/gi;
+    return input.replace(reg, (match) => map[match]);
+  }
+
   return (
     <>
       <h1>
-        {name}, {country}
+        {sanitizedName}, {sanitizedCountry}
       </h1>
       <h2>Regular Clock</h2>
       <h2 className="digital-clock">

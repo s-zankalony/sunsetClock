@@ -8,7 +8,7 @@ const getSunsetTime = async (city) => {
   });
   try {
     const response = await customAxios.get(`/?${searchParams}`);
-    const data = await response.data;
+    const data = response.data;
     console.log(data);
     return data;
   } catch (error) {
@@ -30,19 +30,35 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const city = e.target.city.value;
-    const cityData = await getSunsetTime(city);
-    const sunsetTime = cityData.sys.sunset;
-    const timezone = cityData.timezone;
-    const name = cityData.name;
-    const country = cityData.sys.country;
-    console.log(`Sunset Time: ${sunsetTime}`);
-    console.log(`timezone: ${timezone}`);
-    console.log(`name: ${name}`);
-    console.log(`country: ${country}`);
-    onSunsetTime(sunsetTime);
-    onTimezone(timezone);
-    onName(name);
-    onCountry(country);
+    if (city !== '') {
+      const cityData = await getSunsetTime(city);
+      if (cityData !== undefined && cityData !== null) {
+        if (
+          cityData.hasOwnProperty('sys') &&
+          cityData.sys.hasOwnProperty('sunset') &&
+          cityData.hasOwnProperty('timezone') &&
+          cityData.hasOwnProperty('name') &&
+          cityData.sys.hasOwnProperty('country')
+        ) {
+          const sunsetTime = cityData.sys.sunset;
+          const timezone = cityData.timezone;
+          const name = cityData.name;
+          const country = cityData.sys.country;
+          console.log(`Sunset Time: ${sunsetTime}`);
+          console.log(`timezone: ${timezone}`);
+          console.log(`name: ${name}`);
+          console.log(`country: ${country}`);
+          onSunsetTime(sunsetTime);
+          onTimezone(timezone);
+          onName(name);
+          onCountry(country);
+        } else {
+          console.log('Invalid city data');
+        }
+      } else {
+        console.log('cityData is undefined or null');
+      }
+    }
   };
 
   return (
@@ -58,5 +74,4 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
   );
 };
 
-export let sunsetTime;
 export default GetCityForm;
