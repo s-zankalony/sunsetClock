@@ -29,7 +29,6 @@ function App() {
         country={country}
       />
       <hr />
-
       <p>
         This is a simple clock that displays the sunset clock of a given city by
         considering sunset as midnight.
@@ -37,6 +36,15 @@ function App() {
       <p>
         Enter a city name in the input field and click the "Get Sunset Clock"
       </p>
+      <small>
+        <a target="_blank" href="https://icons8.com/icon/63250/clock">
+          Clock
+        </a>{' '}
+        icon by{' '}
+        <a target="_blank" href="https://icons8.com">
+          Icons8
+        </a>
+      </small>
     </>
   );
 }
