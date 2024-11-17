@@ -88,7 +88,7 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
       <hr />
       <h2>Sunset Clock</h2>
       <h2 className="digital-clock">
-        {sunsetHours} : {sunsetMinutes} : {sunsetSeconds}
+        {sunsetHours} : {sunsetMinutes} : {sunsetSeconds<10 ? `0${sunsetSeconds}` : sunsetSeconds}
       </h2>
     </>
   );
