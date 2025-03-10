@@ -110,6 +110,15 @@ small a:hover {
   }
 }
 
+.cards-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  margin: 2rem 0;
+  justify-content: center;
+  align-items: flex-start;
+}
+
 .card {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 16px;
@@ -119,10 +128,16 @@ small a:hover {
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: transform 0.3s ease;
+  color: #f5f5f5;
 }
 
 .card:hover {
   transform: translateY(-5px);
+}
+
+.description-card {
+  flex: 1;
+  max-width: 400px;
 }
 
 .read-the-docs {
@@ -222,6 +237,7 @@ small a:hover {
 }
 
 .sunset-info {
+  flex: 1;
   animation: fadeIn 1s ease-in;
 }
 
@@ -237,6 +253,17 @@ small a:hover {
 }
 
 @media (max-width: 768px) {
+  .cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .description-card,
+  .sunset-info {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .digital-clock {
     font-size: 3rem;
     min-width: 280px;
