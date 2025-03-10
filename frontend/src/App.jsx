@@ -15,27 +15,36 @@ function App() {
   return (
     <>
       <h1>Sunset Clock</h1>
-      <GetCityForm
-        onSunsetTime={handleSunsetTime}
-        onTimezone={handleTimezone}
-        onName={handleName}
-        onCountry={handleCountry}
-      />
-      <hr />
-      <SunsetClock
-        sunsetTime={sunsetTime}
-        timezone={timezone}
-        name={name}
-        country={country}
-      />
-      <hr />
-      <p>
-        This is a simple clock that displays the sunset clock of a given city by
-        considering sunset as midnight.
-      </p>
-      <p>
-        Enter a city name in the input field and click the "Get Sunset Clock"
-      </p>
+
+      <div className="card">
+        <GetCityForm
+          onSunsetTime={handleSunsetTime}
+          onTimezone={handleTimezone}
+          onName={handleName}
+          onCountry={handleCountry}
+        />
+      </div>
+
+      <div className="card sunset-info">
+        <SunsetClock
+          sunsetTime={sunsetTime}
+          timezone={timezone}
+          name={name}
+          country={country}
+        />
+      </div>
+
+      <div className="card">
+        <p>
+          This is a simple clock that displays the sunset clock of a given city
+          by considering sunset as midnight.
+        </p>
+        <p>
+          Enter a city name in the input field and click the "Get Sunset Clock"
+          button to see both the regular time and sunset-relative time.
+        </p>
+      </div>
+
       <small>
         <a target="_blank" href="https://icons8.com/icon/63250/clock">
           Clock

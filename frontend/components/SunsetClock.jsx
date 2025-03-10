@@ -78,18 +78,27 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
 
   return (
     <>
-      <h1>
+      <h2 className="city-info">
         {sanitizedName}, {sanitizedCountry}
-      </h1>
-      <h2>Regular Clock</h2>
-      <h2 className="digital-clock">
-        {hours<10 ? `0${hours}`: hours} : {minutes<10 ? `0${minutes}` : minutes} : {seconds<10 ? `0${seconds}` : seconds}
       </h2>
-      <hr />
-      <h2>Sunset Clock</h2>
-      <h2 className="digital-clock">
-        {sunsetHours<10 ? `0${sunsetHours}` : sunsetHours} : {sunsetMinutes<10 ? `0${sunsetMinutes}` : sunsetMinutes} : {sunsetSeconds<10 ? `0${sunsetSeconds}` : sunsetSeconds}
-      </h2>
+
+      <div className="clock-container">
+        <div className="clock-label">Regular Clock</div>
+        <h2 className="digital-clock">
+          {hours < 10 ? `0${hours}` : hours} :{' '}
+          {minutes < 10 ? `0${minutes}` : minutes} :{' '}
+          {seconds < 10 ? `0${seconds}` : seconds}
+        </h2>
+      </div>
+
+      <div className="clock-container">
+        <div className="clock-label">Sunset Clock</div>
+        <h2 className="digital-clock">
+          {sunsetHours < 10 ? `0${sunsetHours}` : sunsetHours} :{' '}
+          {sunsetMinutes < 10 ? `0${sunsetMinutes}` : sunsetMinutes} :{' '}
+          {sunsetSeconds < 10 ? `0${sunsetSeconds}` : sunsetSeconds}
+        </h2>
+      </div>
     </>
   );
 };

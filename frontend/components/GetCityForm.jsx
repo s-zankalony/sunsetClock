@@ -67,7 +67,12 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
         <label className="label" htmlFor="city">
           Enter your city
         </label>
-        <input className="input" type="text" name="city" />
+        <input
+          className="input"
+          type="text"
+          name="city"
+          placeholder="e.g. Tokyo, New York, Paris"
+        />
         <input className="input" type="submit" value="Get Sunset Clock" />
       </form>
     </>
