@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import SunsetClock from '../components/SunsetClock';
 import GetCityForm from '../components/GetCityForm';
+import AdSense from '../components/AdSense';
 
 function App() {
   const [sunsetTime, setSunsetTime] = useState(null);
@@ -13,7 +14,7 @@ function App() {
   const handleName = (name) => setName(name);
   const handleCountry = (country) => setCountry(country);
   return (
-    <>
+    <div className="app">
       <h1 lang="ar" dir="rtl">
         الساعة الغروبية (الزوالية)
       </h1>
@@ -69,7 +70,9 @@ function App() {
           Icons8
         </a>
       </small>
-    </>
+
+      <AdSense />
+    </div>
   );
 }
 
