@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useEffect, useRef } from 'react';
 import SunsetClock from './SunsetClock';
 
 const getSunsetTime = async (city) => {
@@ -21,15 +22,31 @@ const getSunsetTime = async (city) => {
     } else {
       console.log('Error', error.message);
     }
-    {
+  }
+};
+
+// Reverse geocoding function to get city name from coordinates
+const getCityFromCoords = async (lat, lon) => {
+  try {
+    const response = await axios.get(
+      `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${
+        import.meta.env.VITE_OPENWEATHERMAP_API_KEY
+      }`
+    );
+    if (response.data && response.data.length > 0) {
+      return response.data[0].name;
     }
+    return null;
+  } catch (error) {
+    console.error('Error getting city name:', error);
+    return null;
   }
 };
 
 const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const city = e.target.city.value;
+  const cityInputRef = useRef(null);
+
+  const fetchSunsetData = async (city) => {
     if (city !== '') {
       const cityData = await getSunsetTime(city);
       if (cityData !== undefined && cityData !== null) {
@@ -61,6 +78,59 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
     }
   };
 
+  useEffect(() => {
+    // Try to get user location when component mounts
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          // Success - got coordinates
+          const { latitude, longitude } = position.coords;
+          try {
+            // Get city name from coordinates
+            const cityName = await getCityFromCoords(latitude, longitude);
+            if (cityName) {
+              // Set the input value to the detected city
+              if (cityInputRef.current) {
+                cityInputRef.current.value = cityName;
+              }
+              // Automatically fetch sunset data for detected city
+              await fetchSunsetData(cityName);
+            } else {
+              // If reverse geocoding failed, use default
+              useDefaultCity();
+            }
+          } catch (error) {
+            console.error('Error processing geolocation:', error);
+            useDefaultCity();
+          }
+        },
+        (error) => {
+          // Error or permission denied
+          console.log('Geolocation error:', error.message);
+          useDefaultCity();
+        }
+      );
+    } else {
+      // Browser doesn't support geolocation
+      console.log("Browser doesn't support geolocation");
+      useDefaultCity();
+    }
+  }, []);
+
+  const useDefaultCity = async () => {
+    const defaultCity = 'Alexandria, EG';
+    if (cityInputRef.current) {
+      cityInputRef.current.value = defaultCity;
+    }
+    await fetchSunsetData(defaultCity);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const city = e.target.city.value;
+    await fetchSunsetData(city);
+  };
+
   return (
     <>
       <form className="form" action="submit" onSubmit={handleSubmit}>
@@ -71,6 +141,7 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
           className="input"
           type="text"
           name="city"
+          ref={cityInputRef}
           placeholder="e.g. Tokyo, New York, Paris"
         />
         <input className="input" type="submit" value="Get Sunset Clock" />
