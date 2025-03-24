@@ -1,0 +1,5 @@
+{
+	"appId": "com.sunsetclock",
+	"appName": "sunsetClock",
+	"webDir": "frontend/dist"
+}

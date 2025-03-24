@@ -1,0 +1,8 @@
+{
+	"appId": "com.sunsetclock",
+	"appName": "sunsetClock",
+	"webDir": "frontend/dist",
+	"packageClassList": [
+		"GeolocationPlugin"
+	]
+}

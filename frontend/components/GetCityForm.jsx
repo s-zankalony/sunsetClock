@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { useEffect, useRef } from 'react';
-import SunsetClock from './SunsetClock';
+import { useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 
 const getSunsetTime = async (city) => {
   const searchParams = new URLSearchParams({ city: city }).toString();
@@ -46,16 +46,25 @@ const getCityFromCoords = async (lat, lon) => {
 const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
   const cityInputRef = useRef(null);
 
-  const fetchSunsetData = async (city) => {
+  const setDefaultCity = useCallback(async () => {
+    const defaultCity = 'Alexandria, EG';
+    if (cityInputRef.current) {
+      cityInputRef.current.value = defaultCity;
+    }
+    await fetchSunsetData(defaultCity);
+  }, [fetchSunsetData]);
+
+  const fetchSunsetData = useCallback(async (city) => {
+
     if (city !== '') {
       const cityData = await getSunsetTime(city);
       if (cityData !== undefined && cityData !== null) {
-        if (
-          cityData.hasOwnProperty('sys') &&
-          cityData.sys.hasOwnProperty('sunset') &&
-          cityData.hasOwnProperty('timezone') &&
-          cityData.hasOwnProperty('name') &&
-          cityData.sys.hasOwnProperty('country')
+        if (Object.prototype.hasOwnProperty.call(cityData, 'sys') &&
+          Object.prototype.hasOwnProperty.call(cityData.sys, 'sunset') &&
+          Object.prototype.hasOwnProperty.call(cityData, 'timezone') &&
+          Object.prototype.hasOwnProperty.call(cityData, 'name') &&
+          Object.prototype.hasOwnProperty.call(cityData.sys, 'country')
+
         ) {
           const sunsetTime = cityData.sys.sunset;
           const timezone = cityData.timezone;
@@ -76,11 +85,12 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
         console.log('cityData is undefined or null');
       }
     }
-  };
+  }, [onSunsetTime, onTimezone, onName, onCountry]);
 
   useEffect(() => {
     // Try to get user location when component mounts
     if (navigator.geolocation) {
+      
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           // Success - got coordinates
@@ -97,33 +107,25 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
               await fetchSunsetData(cityName);
             } else {
               // If reverse geocoding failed, use default
-              useDefaultCity();
+              await setDefaultCity();
             }
           } catch (error) {
             console.error('Error processing geolocation:', error);
-            useDefaultCity();
+            await setDefaultCity();
           }
         },
-        (error) => {
+        async (error) => {
           // Error or permission denied
           console.log('Geolocation error:', error.message);
-          useDefaultCity();
+          await setDefaultCity();
         }
       );
     } else {
       // Browser doesn't support geolocation
-      console.log("Browser doesn't support geolocation");
-      useDefaultCity();
+      console.log("Browser doesn't support geolocation");      
+      setDefaultCity();
     }
-  }, []);
-
-  const useDefaultCity = async () => {
-    const defaultCity = 'Alexandria, EG';
-    if (cityInputRef.current) {
-      cityInputRef.current.value = defaultCity;
-    }
-    await fetchSunsetData(defaultCity);
-  };
+  }, [fetchSunsetData, setDefaultCity]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -148,6 +150,13 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
       </form>
     </>
   );
+};
+
+GetCityForm.propTypes = {
+  onSunsetTime: PropTypes.func.isRequired,
+  onTimezone: PropTypes.func.isRequired,
+  onName: PropTypes.func.isRequired,
+  onCountry: PropTypes.func.isRequired,
 };
 
 export default GetCityForm;

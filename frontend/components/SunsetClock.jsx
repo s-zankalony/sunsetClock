@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
+  SunsetClock.propTypes = {
+    sunsetTime: PropTypes.number,
+    timezone: PropTypes.number,
+    name: PropTypes.string,
+    country: PropTypes.string,
+  };
+
   const sanitizedTimezone = Number(timezone);
   if (isNaN(sanitizedTimezone)) {
     throw new Error('Invalid timezone');
