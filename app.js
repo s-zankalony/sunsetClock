@@ -13,14 +13,9 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
-  next();
-});
+// Use cors middleware instead of manual CORS headers
+app.use(cors());
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,6 +23,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'frontend/dist')));
 
 app.use('/api/v1', indexRouter);
+
+// Fallback route for SPA - serve index.html for any routes not handled above
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
