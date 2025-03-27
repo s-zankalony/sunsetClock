@@ -1,0 +1,20 @@
+{
+  "short_name": "SunsetClock",
+  "name": "Sunset Clock App",
+  "icons": [
+    {
+      "src": "frontend/public/icons8-clock.svg",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "frontend/public/icons8-clock.svg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}
