@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 const getSunsetTime = async (city) => {
   const searchParams = new URLSearchParams({ city: city }).toString();
   const customAxios = axios.create({
-    baseURL: `/api/v1`,
+    baseURL: `/api/v1/sunsetData`,
   });
   try {
     const response = await customAxios.get(`/?${searchParams}`);
@@ -22,19 +22,17 @@ const getSunsetTime = async (city) => {
     } else {
       console.log('Error', error.message);
     }
+    // Return null or a default error object when an error occurs
+    return null;
   }
 };
 
 // Reverse geocoding function to get city name from coordinates
-const getCityFromCoords = async (lat, lon) => {
+const getCity = async (lat, lon) => {
   try {
-    const response = await axios.get(
-      `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${
-        import.meta.env.VITE_OPENWEATHERMAP_API_KEY
-      }`
-    );
+    const response = await axios.get(`/api/v1/getCity?lat=${lat}&lon=${lon}`);
     if (response.data && response.data.length > 0) {
-      return response.data[0].name;
+      return `${response.data[0].name}, ${response.data[0].country}`;
     }
     return null;
   } catch (error) {
@@ -98,14 +96,22 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
           initialPermissionDenied.current = false;
           const { latitude, longitude } = position.coords;
           try {
-            const cityName = await getCityFromCoords(latitude, longitude);
+            const cityName = await getCity(latitude, longitude);
             if (cityName) {
               if (cityInputRef.current) {
                 cityInputRef.current.value = cityName;
+                console.log(cityName);
+                // Submit the form automatically after setting city
+                await handleSubmit();
               }
-              await fetchSunsetData(cityName);
             } else if (initialPermissionDenied.current) {
               await setDefaultCity();
+            } else {
+              // Preserve existing city if permission denied after initial load
+              const currentCity = cityInputRef.current.value;
+              if (currentCity) {
+                await fetchSunsetData(currentCity);
+              }
             }
           } catch (error) {
             console.error('Error processing geolocation:', error);
@@ -129,12 +135,16 @@ const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
       console.log("Browser doesn't support geolocation");
       setDefaultCity();
     }
-  }, [fetchSunsetData, setDefaultCity]);
+  }, []); // Add empty dependency array here
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const city = e.target.city.value;
-    await fetchSunsetData(city);
+    if (e) {
+      e.preventDefault();
+    }
+    const city = cityInputRef.current?.value.trim();
+    if (city) {
+      await fetchSunsetData(city);
+    }
   };
 
   return (
