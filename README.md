@@ -19,24 +19,41 @@ The Sunset Clock project is a web-based application that calculates time based o
 - Customizable sunset time settings.
 - Responsive design for different screen sizes.
 
-## Installation
-To get a local copy up and running, follow these simple steps:
+## Installation and development
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/s-zankalony/sunsetClock.git
-   ```
+Use Node.js 20.19 or newer (a supported LTS release is recommended).
 
-1. Navigate to the project directory
 ```sh
-cd sunsetClock
+npm ci
+npm --prefix frontend ci
+npm --prefix frontend run build
+npm start
 ```
-Open index.html in your preferred web browser.
 
-## Usage
-* Open the index.html file in a web browser.
-* Set your local sunset time.
-* The application will display the current time based on the sunset clock system.
+Set `WEATHER_API_KEY` in `.env` for real OpenWeather requests. Never commit that file.
+For development, run `npm run dev` for the backend and `npm --prefix frontend run dev`
+in a second terminal. Backend reloads use Node's built-in watch mode, replacing
+nodemon without a third-party file-watching dependency chain. Watch mode restarts
+when imported JavaScript modules change; restart manually after changing `.env`
+or other non-imported files.
+
+## Checks
+
+```sh
+npm test
+npm --prefix frontend run build
+npm run test:dependencies
+npm --prefix frontend run lint
+npm audit
+npm --prefix frontend audit
+```
+
+Controller tests use Node's built-in test runner and mocked upstream responses;
+no weather API key or external requests are required. Dependency smoke checks
+require the frontend build. The frontend currently has an upstream development-only
+picomatch advisory with no published fixed version (GHSA-fc5q-39xc-vjpf); even
+Vite 8 currently depends on the affected package. Keep the development server local
+and use trusted project/configuration files. Production-only audits are clean.
 
 ## Contributing
 
