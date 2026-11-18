@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
@@ -22,9 +22,6 @@ const SunsetClock = ({ sunsetTime, timezone, name, country }) => {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    // Define i inside the useEffect to avoid temporal dead zone issues
-    let i;
-
     // Clear any existing interval first
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
