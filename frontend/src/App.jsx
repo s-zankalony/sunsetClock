@@ -9,10 +9,6 @@ function App() {
   const [timezone, setTimezone] = useState(null);
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
-  const handleSunsetTime = (time) => setSunsetTime(time);
-  const handleTimezone = (timezone) => setTimezone(timezone);
-  const handleName = (name) => setName(name);
-  const handleCountry = (country) => setCountry(country);
   return (
     <div className="app">
       <h1 lang="ar" dir="rtl">
@@ -22,10 +18,10 @@ function App() {
 
       <div className="card">
         <GetCityForm
-          onSunsetTime={handleSunsetTime}
-          onTimezone={handleTimezone}
-          onName={handleName}
-          onCountry={handleCountry}
+          onSunsetTime={setSunsetTime}
+          onTimezone={setTimezone}
+          onName={setName}
+          onCountry={setCountry}
         />
       </div>
 

@@ -1,176 +1,92 @@
 import axios from 'axios';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-
-const getSunsetTime = async (city) => {
-  const searchParams = new URLSearchParams({ city: city }).toString();
-  const customAxios = axios.create({
-    baseURL: `/api/v1/sunsetData`,
-  });
-  try {
-    const response = await customAxios.get(`/?${searchParams}`);
-    const data = response.data;
-    console.log(data);
-    return data;
-  } catch (error) {
-    if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
-      console.log(error.request);
-    } else {
-      console.log('Error', error.message);
-    }
-    // Return null or a default error object when an error occurs
-    return null;
-  }
-};
-
-// Reverse geocoding function to get city name from coordinates
-const getCity = async (lat, lon) => {
-  try {
-    const response = await axios.get(`/api/v1/getCity?lat=${lat}&lon=${lon}`);
-    if (response.data && response.data.length > 0) {
-      return `${response.data[0].name}, ${response.data[0].country}`;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error getting city name:', error);
-    return null;
-  }
-};
+import { lookupErrorMessage, validCityData } from '../lib/cityLookup';
 
 const GetCityForm = ({ onSunsetTime, onTimezone, onName, onCountry }) => {
   const cityInputRef = useRef(null);
-  const initialPermissionDenied = useRef(true);
+  const requestId = useRef(0);
+  const userInteracted = useRef(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const fetchSunsetData = useCallback(
-    async (city) => {
-      if (city !== '') {
-        const cityData = await getSunsetTime(city);
-        if (cityData !== undefined && cityData !== null) {
-          if (
-            Object.prototype.hasOwnProperty.call(cityData, 'sys') &&
-            Object.prototype.hasOwnProperty.call(cityData.sys, 'sunset') &&
-            Object.prototype.hasOwnProperty.call(cityData, 'timezone') &&
-            Object.prototype.hasOwnProperty.call(cityData, 'name') &&
-            Object.prototype.hasOwnProperty.call(cityData.sys, 'country')
-          ) {
-            const sunsetTime = cityData.sys.sunset;
-            const timezone = cityData.timezone;
-            const name = cityData.name;
-            const country = cityData.sys.country;
-            console.log(`Sunset Time: ${sunsetTime}`);
-            console.log(`timezone: ${timezone}`);
-            console.log(`name: ${name}`);
-            console.log(`country: ${country}`);
-            onSunsetTime(sunsetTime);
-            onTimezone(timezone);
-            onName(name);
-            onCountry(country);
-          } else {
-            console.log('Invalid city data');
-          }
-        } else {
-          console.log('cityData is undefined or null');
-        }
-      }
-    },
-    [onSunsetTime, onTimezone, onName, onCountry]
-  );
-
-  const setDefaultCity = useCallback(async () => {
-    const defaultCity = 'Alexandria, EG';
-    if (cityInputRef.current) {
-      cityInputRef.current.value = defaultCity;
+  const fetchSunsetData = useCallback(async (city) => {
+    const id = ++requestId.current;
+    setError('');
+    onSunsetTime(null);
+    onTimezone(null);
+    onName('');
+    onCountry('');
+    if (!city) {
+      setLoading(false);
+      setError('Please enter a city name.');
+      return;
     }
-    await fetchSunsetData(defaultCity);
-  }, [fetchSunsetData]);
+    setLoading(true);
+    try {
+      const { data } = await axios.get('/api/v1/sunsetData', { params: { city }, timeout: 15000 });
+      if (id !== requestId.current) return;
+      if (!validCityData(data)) {
+        setError('The weather service returned incomplete city data. Please try again.');
+        return;
+      }
+      onSunsetTime(data.sys.sunset);
+      onTimezone(data.timezone);
+      onName(data.name);
+      onCountry(data.sys.country);
+    } catch (err) {
+      if (id === requestId.current) setError(lookupErrorMessage(err));
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [onSunsetTime, onTimezone, onName, onCountry]);
 
   useEffect(() => {
-    // Try to get user location when component mounts
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          initialPermissionDenied.current = false;
-          const { latitude, longitude } = position.coords;
-          try {
-            const cityName = await getCity(latitude, longitude);
-            if (cityName) {
-              if (cityInputRef.current) {
-                cityInputRef.current.value = cityName;
-                console.log(cityName);
-                // Submit the form automatically after setting city
-                await handleSubmit();
-              }
-            } else if (initialPermissionDenied.current) {
-              await setDefaultCity();
-            } else {
-              // Preserve existing city if permission denied after initial load
-              const currentCity = cityInputRef.current.value;
-              if (currentCity) {
-                await fetchSunsetData(currentCity);
-              }
-            }
-          } catch (error) {
-            console.error('Error processing geolocation:', error);
-            if (initialPermissionDenied.current) {
-              await setDefaultCity();
-            }
-          }
-        },
-        async (error) => {
-          console.log('Geolocation error:', error.message);
-          if (
-            error.code === error.PERMISSION_DENIED &&
-            initialPermissionDenied.current
-          ) {
-            await setDefaultCity();
-            initialPermissionDenied.current = false;
-          }
-        }
-      );
-    } else {
-      console.log("Browser doesn't support geolocation");
-      setDefaultCity();
-    }
-  }, []); // Add empty dependency array here
-
-  const handleSubmit = async (e) => {
-    if (e) {
-      e.preventDefault();
-    }
-    const city = cityInputRef.current?.value.trim();
-    if (city) {
+    let active = true;
+    const requests = requestId;
+    const applyInitialCity = async (city) => {
+      if (!active || userInteracted.current) return;
+      cityInputRef.current.value = city;
       await fetchSunsetData(city);
-    }
+    };
+    const fallback = () => applyInitialCity('Alexandria, EG');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+        if (!active || userInteracted.current) return;
+        try {
+          const { data } = await axios.get('/api/v1/getCity', {
+            params: { lat: coords.latitude, lon: coords.longitude }, timeout: 15000,
+          });
+          if (data?.[0]?.name && data[0].country) {
+            await applyInitialCity(`${data[0].name}, ${data[0].country}`);
+          } else await fallback();
+        } catch { await fallback(); }
+      }, fallback, { timeout: 10000 });
+    } else fallback();
+    return () => { active = false; ++requests.current; };
+  }, [fetchSunsetData]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    userInteracted.current = true;
+    fetchSunsetData(cityInputRef.current.value.trim());
   };
 
   return (
-    <>
-      <form className="form" action="submit" onSubmit={handleSubmit}>
-        <label className="label" htmlFor="city">
-          Enter your city
-        </label>
-        <input
-          className="input"
-          type="text"
-          name="city"
-          ref={cityInputRef}
-          placeholder="e.g. Tokyo, New York, Paris"
-        />
-        <input className="input" type="submit" value="Get Sunset Clock" />
-      </form>
-    </>
+    <form className="form" onSubmit={handleSubmit} aria-busy={loading}>
+      <label className="label" htmlFor="city">Enter your city</label>
+      <input className="input" id="city" type="text" name="city" ref={cityInputRef}
+        placeholder="e.g. Tokyo, New York, Paris" aria-invalid={Boolean(error)}
+        aria-describedby={error ? 'city-error' : undefined}
+        onChange={() => { userInteracted.current = true; }} />
+      <input className="input" type="submit" value={loading ? 'Searching…' : 'Get Sunset Clock'} />
+      {loading && <p role="status">Loading sunset time…</p>}
+      {error && <p id="city-error" role="alert" style={{ color: '#fff', background: '#702b16', padding: '12px', borderRadius: '8px' }}>{error}</p>}
+    </form>
   );
 };
-
 GetCityForm.propTypes = {
-  onSunsetTime: PropTypes.func.isRequired,
-  onTimezone: PropTypes.func.isRequired,
-  onName: PropTypes.func.isRequired,
-  onCountry: PropTypes.func.isRequired,
+  onSunsetTime: PropTypes.func.isRequired, onTimezone: PropTypes.func.isRequired,
+  onName: PropTypes.func.isRequired, onCountry: PropTypes.func.isRequired,
 };
-
 export default GetCityForm;
